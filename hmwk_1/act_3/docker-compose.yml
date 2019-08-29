@@ -1,0 +1,18 @@
+version: '3'
+services:
+  simple:
+    build: ./webServer
+    ports:
+      - "8080:80"
+  simple2:
+    build: ./webServer2
+    ports:
+      - "8081:80"
+  cache:
+    build: ./cache
+    ports:
+      - "8000:8000"
+  loadbalacer:
+    build: ./loadbalancer
+    ports:
+      - "9000:80"
