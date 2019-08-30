@@ -12,7 +12,7 @@ services:
     build: ./cache
     ports:
       - "8000:8000"
-  loadbalacer:
+  loadbalancer:
     build: ./loadbalancer
     ports:
       - "9000:80"
