@@ -95,6 +95,7 @@ def parse_value(request, value):
     """
 
     request = request.split('\r\n')
+
     if ':' in value:
         for field in request:
             if value in field:
