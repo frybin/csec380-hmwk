@@ -64,7 +64,7 @@ def main():
     r.render()
     r.send()
 
-    print(r.data)
+    print(simplerequest.parse_value(r.data, "flag is"))
 
 
 if __name__ == "__main__":
