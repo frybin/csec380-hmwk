@@ -95,15 +95,14 @@ def parse_value(request, value):
     """
 
     request = request.split('\r\n')
-    print(request)
     if ':' in value:
         for field in request:
             if value in field:
-                return (':'.join(field.split(':')[1:]).strip())
+                return (':'.join(field.split(':')[1:]).strip()).strip('"')
     else:
         for field in request:
             if value in field:
-                return (field.split()[-1])
+                return (field.split()[-1]).strip('"')
 
 def url_encode(s):
     """
