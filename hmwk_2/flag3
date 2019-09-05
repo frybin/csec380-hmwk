@@ -1,0 +1,24 @@
+HTTP/1.1 200 OK
+Date: Sun, 01 Sep 2019 06:25:12 GMT
+Server: Apache/2.4.29 (Ubuntu)
+Content-Length: 29
+Vary: Accept-Encoding
+Content-Type: text/html; charset=utf-8
+
+"solve the following: 254-26"
+POST /getFlag3Challenge HTTP/1.1
+User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)
+Host: csec380-core.csec.rit.edu:82
+Content-Length: 75
+Vary: Accept-Encoding
+Content-Type: application/x-www-form-urlencoded charset=utf-8
+
+solution=228&token=61a7f44ebd7904a97c08095d51e8987852713aaaece8d0fbad4378ec
+HTTP/1.1 200 OK
+Date: Sun, 01 Sep 2019 06:25:12 GMT
+Server: Apache/2.4.29 (Ubuntu)
+Content-Length: 85
+Vary: Accept-Encoding
+Content-Type: text/html; charset=utf-8
+
+"Welcome your third flag is 41ee472be69964f80d430e067842f045b26699a23cc9d34cee0c95e8"

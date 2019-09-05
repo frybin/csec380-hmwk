@@ -1,0 +1,13 @@
+POST / HTTP/1.1
+User-Agent: REEEEEEEEEEEEEE
+Host: csec380-core.csec.rit.edu:82
+
+
+HTTP/1.1 200 OK
+Date: Sun, 01 Sep 2019 03:33:57 GMT
+Server: Apache/2.4.29 (Ubuntu)
+Content-Length: 85
+Vary: Accept-Encoding
+Content-Type: text/html; charset=utf-8
+
+"Welcome your first flag is 388ab48da65ef7860a2751589742866393ca47900e311973c17dece1"

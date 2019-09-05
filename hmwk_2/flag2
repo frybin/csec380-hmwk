@@ -1,0 +1,16 @@
+POST /getFlag2 HTTP/1.1
+User-Agent: REEEEEEEEEEEEEE
+Host: csec380-core.csec.rit.edu:82
+Content-Length: 62
+Vary: Accept-Encoding
+Content-Type: application/x-www-form-urlencoded; charset=utf-8
+
+token=db66524419a3801bd71e7d8884159da5f2daf2d1b301e709755e3947
+HTTP/1.1 200 OK
+Date: Sun, 01 Sep 2019 05:14:21 GMT
+Server: Apache/2.4.29 (Ubuntu)
+Content-Length: 86
+Vary: Accept-Encoding
+Content-Type: text/html; charset=utf-8
+
+"Welcome your second flag is 16b2eb06559c2e4bd1ba03c3a7600a1feb5d11e06421e27f43111659"

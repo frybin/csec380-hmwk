@@ -1,0 +1,66 @@
+POST /getSecure HTTP/1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko
+Host: csec380-core.csec.rit.edu:82
+Accept: text/html
+Accept-Language: en-US
+Accept-Encoding: text/html
+Connection: keep-alive
+Content-Type: application/x-www-form-urlencoded; charset=utf-8
+Content-Length: 0
+
+
+HTTP/1.1 200 OK
+Date: Sun, 01 Sep 2019 07:30:21 GMT
+Server: Apache/2.4.29 (Ubuntu)
+Content-Length: 82
+Vary: Accept-Encoding
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+Content-Type: text/html; charset=utf-8
+
+"Your Security Token is: 25e4ec2d5b7fbb876405a514a307a5dc7f1711ade2b59200f2159a02"
+['HTTP/1.1 200 OK', 'Date: Sun, 01 Sep 2019 07:30:21 GMT', 'Server: Apache/2.4.29 (Ubuntu)', 'Content-Length: 82', 'Vary: Accept-Encoding', 'Keep-Alive: timeout=5, max=100', 'Connection: Keep-Alive', 'Content-Type: text/html; charset=utf-8', '', '"Your Security Token is: 25e4ec2d5b7fbb876405a514a307a5dc7f1711ade2b59200f2159a02"']
+POST /createAccount HTTP/1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko
+Host: csec380-core.csec.rit.edu:82
+Accept: text/html
+Accept-Language: en-US
+Accept-Encoding: text/html
+Connection: keep-alive
+Content-Type: application/x-www-form-urlencoded; charset=utf-8
+Content-Length: 84
+
+username=oneNutW0nder&token=25e4ec2d5b7fbb876405a514a307a5dc7f1711ade2b59200f2159a02
+HTTP/1.1 200 OK
+Date: Sun, 01 Sep 2019 07:30:21 GMT
+Server: Apache/2.4.29 (Ubuntu)
+Content-Length: 38
+Vary: Accept-Encoding
+Keep-Alive: timeout=5, max=99
+Connection: Keep-Alive
+Content-Type: text/html; charset=utf-8
+
+Created Account, your password is &b=e
+['HTTP/1.1 200 OK', 'Date: Sun, 01 Sep 2019 07:30:21 GMT', 'Server: Apache/2.4.29 (Ubuntu)', 'Content-Length: 38', 'Vary: Accept-Encoding', 'Keep-Alive: timeout=5, max=99', 'Connection: Keep-Alive', 'Content-Type: text/html; charset=utf-8', '', 'Created Account, your password is &b=e']
+&b=e
+POST /login HTTP/1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko
+Host: csec380-core.csec.rit.edu:82
+Accept: text/html
+Accept-Language: en-US
+Accept-Encoding: text/html
+Connection: keep-alive
+Content-Type: application/x-www-form-urlencoded; charset=utf-8
+Content-Length: 102
+
+username=oneNutW0nder&password=%26b%3De&token=25e4ec2d5b7fbb876405a514a307a5dc7f1711ade2b59200f2159a02
+HTTP/1.1 200 OK
+Date: Sun, 01 Sep 2019 07:30:21 GMT
+Server: Apache/2.4.29 (Ubuntu)
+Content-Length: 86
+Vary: Accept-Encoding
+Keep-Alive: timeout=5, max=98
+Connection: Keep-Alive
+Content-Type: text/html; charset=utf-8
+
+"Welcome your fourth flag is a68cec27e3717a91aa89b554f941f7b0c121c1d01e0014bbed2202a3"
