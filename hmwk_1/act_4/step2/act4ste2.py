@@ -22,6 +22,12 @@ def usage():
 
 
 def sendit(addr):
+    """
+    This function sends the request to check for a proxy at the provided IP
+    
+    Args:
+        addr (int): This is an IP address that is a potential proxy
+    """
 
     addr = str(netaddr.IPAddress(addr))
     # Common ports
