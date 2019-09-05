@@ -1,5 +1,3 @@
-# /usr/bin/env python
-
 #
 # Name: Simon Buchheit
 # Email: scb5436@rit.edu
