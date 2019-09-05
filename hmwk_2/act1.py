@@ -1,4 +1,4 @@
-#/usr/bin/env python
+# /usr/bin/env python
 
 #
 # Name: Simon Buchheit
@@ -11,12 +11,16 @@
 
 import simplerequest
 
+
 def main():
-    r = simplerequest.SimpleRequest('csec380-core.csec.rit.edu', port=82, type='POST')
+    r = simplerequest.SimpleRequest(
+        "csec380-core.csec.rit.edu", port=82, type="POST"
+    )
     r.render()
     r.send()
 
     print(r.data)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

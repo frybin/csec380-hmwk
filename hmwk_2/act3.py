@@ -1,4 +1,4 @@
-#/usr/bin/env python
+# /usr/bin/env python
 
 #
 # Name: Simon Buchheit
@@ -11,21 +11,30 @@
 
 import simplerequest
 
+
 def main():
-    r = simplerequest.SimpleRequest('csec380-core.csec.rit.edu', port=82, type='POST', resource='/getSecure')
+    r = simplerequest.SimpleRequest(
+        "csec380-core.csec.rit.edu", port=82, type="POST", resource="/getSecure"
+    )
     r.render()
     r.send()
 
     token = simplerequest.parse_value(r.data, "Token is:")
 
-    r = simplerequest.SimpleRequest('csec380-core.csec.rit.edu', port=82, type='POST', resource='/getFlag3Challenge', body=f'token={token}')
+    r = simplerequest.SimpleRequest(
+        "csec380-core.csec.rit.edu",
+        port=82,
+        type="POST",
+        resource="/getFlag3Challenge",
+        body=f"token={token}",
+    )
     r.render()
     r.send()
 
     captcha = simplerequest.parse_value(r.data, "following:")
 
     # Possible operator list
-    operators = ['+', '-', '//', '*']
+    operators = ["+", "-", "//", "*"]
 
     # Find the operator in the captcha
     op = list(filter(lambda operator: (operator in captcha), operators))
@@ -34,22 +43,29 @@ def main():
     # Get the numbers from the captcha
     captcha = captcha.split(op)
 
-    if op == '//':
-        captcha = int(captcha[0]) // int(captcha[1]) 
-    elif op == '+':
+    if op == "//":
+        captcha = int(captcha[0]) // int(captcha[1])
+    elif op == "+":
         captcha = int(captcha[0]) + int(captcha[1])
-    elif op == '-':
+    elif op == "-":
         captcha = int(captcha[0]) - int(captcha[1])
-    elif op == '*':
+    elif op == "*":
         captcha = int(captcha[0]) * int(captcha[1])
     else:
         print("Operator unknown....")
 
-    r = simplerequest.SimpleRequest('csec380-core.csec.rit.edu', port=82, type='POST', resource='/getFlag3Challenge', body=f'token={token}&solution={captcha}')
+    r = simplerequest.SimpleRequest(
+        "csec380-core.csec.rit.edu",
+        port=82,
+        type="POST",
+        resource="/getFlag3Challenge",
+        body=f"token={token}&solution={captcha}",
+    )
     r.render()
     r.send()
 
     print(r.data)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
