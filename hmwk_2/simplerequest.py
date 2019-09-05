@@ -22,7 +22,7 @@ class SimpleRequest:
     the user's needs
     """
 
-    def __init__(self, host, port='80', type='GET', resource='/', body='', contentType='application/x-www-form-urlencoded', request=''):
+    def __init__(self, host, port='80', type='GET', resource='/', body='', contentType='application/x-www-form-urlencoded', request='', agent='reeeeeee'):
         """
         Sets up the variables that will build the user's custom HTTP request
         
@@ -34,6 +34,7 @@ class SimpleRequest:
             body (str, optional): Information to include in HTTP body. Defaults to ''.
             contentType (str, optional): Type for the content body. Defaults to 'application/x-www-form-urlencoded'.
             request (str, optional): Optionaly provide another request to build onto. Rarely used. Defaults to ''.
+            agent (str, optional): Optionaly provide a custom user agent. Defaults to 'reeeeeee'.
         """
         self.host = host
         self.port = port
@@ -42,6 +43,7 @@ class SimpleRequest:
         self.request = request
         self.body = body
         self.contentType = contentType
+        self.agent = agent
 
         # Create a socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -54,14 +56,14 @@ class SimpleRequest:
             self.request(str): The full HTTP request properly formatted 
         """
         self.request += str(self.type) + " " + str(self.resource) + " " + "HTTP/1.1\r\n"
-        self.request += "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko\r\n"
-        self.request += "Host:" + " " + str(self.host) + ":" + str(self.port) + "\r\n"
+        self.request += "Host: " + str(self.host) + ":" + str(self.port) + "\r\n"
+        self.request += "User-Agent: " + str(self.agent) + "\r\n"
         self.request += "Accept: text/html\r\n"
         self.request += "Accept-Language: en-US\r\n"
         self.request += "Accept-Encoding: text/html\r\n"
         self.request += "Connection: keep-alive\r\n"
-        self.request += "Content-Type:" + " " + str(self.contentType) + "; " + "charset=utf-8\r\n"
-        self.request += "Content-Length:" + " " + str(len(self.body)) + "\r\n"
+        self.request += "Content-Type: " + str(self.contentType) + "; " + "charset=utf-8\r\n"
+        self.request += "Content-Length: " + str(len(self.body)) + "\r\n"
         self.request += "\r\n"
         self.request += str(self.body) 
 
