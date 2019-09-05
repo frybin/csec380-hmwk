@@ -11,8 +11,12 @@
 
 import simplerequest
 
-r = simplerequest.SimpleRequest('csec380-core.csec.rit.edu', port=82, type='POST')
-r.render()
-r.send()
+def main():
+    r = simplerequest.SimpleRequest('csec380-core.csec.rit.edu', port=82, type='POST')
+    r.render()
+    r.send()
 
-print(r.data)
+    print(r.data)
+
+if __name__ == '__main__':
+    main()
