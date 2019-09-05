@@ -34,6 +34,7 @@ def sendit(addr):
             r = requests.get('http://csec.rit.edu', proxies=proxies, timeout=2.5)
 
             if r.status_code == 200 and 'Department of Computing Security | Golisano College of Computing and Information Sciences | RIT' in r.text:
+                print(f'{addr}:{str(port)}')
                 return
             else:
                 continue
