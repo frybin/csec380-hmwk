@@ -25,7 +25,7 @@ class SimpleRequest:
     def __init__(
         self,
         host,
-        port="80",
+        port=80,
         type="GET",
         resource="/",
         body="",
