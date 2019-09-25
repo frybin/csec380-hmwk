@@ -81,17 +81,8 @@ class SimpleRequest:
             "Host: " + str(self.host) + "\r\n"
         )
         self.request += "User-Agent: " + str(self.agent) + "\r\n"
-#        self.request += "Accept: text/html\r\n"
-#        self.request += "DNT: 1\r\n"
-#        self.request += "Accept-Language: en-US\r\n"
-#        self.request += "Accept-Encoding: text/html\r\n"
         self.request += "Connection: close\r\n"
-#        self.request += (
-#            "Content-Type: "
-#            + str(self.contentType)
-#            + "; charset=utf-8\r\n"
-#        )
-#        self.request += "Content-Length: " + str(len(self.body)) + "\r\n"
+        self.request += "Content-Length: " + str(len(self.body)) + "\r\n"
         self.request += "\r\n"
         self.request += str(self.body)
 
@@ -105,6 +96,7 @@ class SimpleRequest:
         Returns:
             self.data(str): The HTTP response from the server
         """
+
         # Create normal socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
