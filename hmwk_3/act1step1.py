@@ -13,13 +13,43 @@
 import bs4
 import simplerequest
 
+
+def get_courseNums(chonker):
+    
+    # List to hold the course numbers 
+    courseNums = []
+
+    for tag in chonker:
+        # Check for None stuff
+        if tag.contents[1].contents[0] is not None:
+            # Check for newlines
+            if tag.contents[1].contents[0] != "\xa0":
+                # Make list to get just course nums
+                # Course nums don't have spaces in name
+                pos_course = tag.contents[1].contents[0].string.strip().split()
+
+                # Check for just course name and remove the dumb "Course" value
+                if (len(pos_course) == 1) and (pos_course[0] != "Course"):
+                    courseNums += pos_course
+
+    return courseNums
+
 def main():
 
+    # Send that sweet sweet request to get the goodies
     r = simplerequest.SimpleRequest("www.rit.edu", port=443, resource="/study/computing-security-bs", https=True)
-    print(r.render())
+    r.render()
     r.send()
 
-    print(r.data)
+    # Start the soup!
+    soup = bs4.BeautifulSoup(r.data, "html.parser")
+
+    # Chonker is the list that holds all "tr" tags
+    chonker = []
+    chonker = soup.find_all('tr')
+        
+    # parse the chonker for courseNumbers
+    courseNums = get_courseNums(chonker)
 
 
 if __name__ == '__main__':
