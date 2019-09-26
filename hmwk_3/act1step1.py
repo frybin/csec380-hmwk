@@ -14,25 +14,63 @@ import bs4
 import simplerequest
 
 
-def get_courseNums(chonker):
+def get_values(chonker):
+    """
+    This function parses the initial bs4 filter for the course numbers
+    and the corresponding course names. If a course does not have a number
+    or name it will not be saved. 
+    
+    :param chonker: The massive list from the intial filter from bs4
+    :return: Returns a dictionary of course numbers and their 
+    corresponding name
+    """
+
+    # Dict to hold the values
+    values = {}
     
     # List to hold the course numbers 
     courseNums = []
 
+    # Loop through the tags
     for tag in chonker:
         # Check for None stuff
-        if tag.contents[1].contents[0] is not None:
+        if (tag.contents[1].contents[0] is not None):
+
             # Check for newlines
-            if tag.contents[1].contents[0] != "\xa0":
+            if (tag.contents[1].contents[0] != "\xa0"):
+
                 # Make list to get just course nums
                 # Course nums don't have spaces in name
                 pos_course = tag.contents[1].contents[0].string.strip().split()
 
                 # Check for just course name and remove the dumb "Course" value
                 if (len(pos_course) == 1) and (pos_course[0] != "Course"):
-                    courseNums += pos_course
+                    # Save course number
+                    courseNums = pos_course[0]
+                    # Save corresponding course name
+                    # find "div" tags where "class=course-name"
+                    name = tag.contents[3].find_all("div", "course-name")[0].get_text().strip()
 
-    return courseNums
+                    # Build dict
+                    values[str(courseNums)] = str(name)
+    
+    return values
+    
+
+def write_csv(values):
+    """
+    This function simply creates a new file and writes the values dict
+    to the new file in a CSV format
+    
+    :param values: Dictionary of courseNum:courseName
+    """
+    
+    with open("./courses.csv", "w+") as fd:
+        for key in values:
+            fd.write(f"{key},{values[key]}\n")
+
+
+
 
 def main():
 
@@ -46,10 +84,15 @@ def main():
 
     # Chonker is the list that holds all "tr" tags
     chonker = []
-    chonker = soup.find_all('tr')
+
+    # Find all "<tr>" tags with "class=hidden-row*"
+    chonker = soup.find_all('tr', "hidden-row")
         
     # parse the chonker for courseNumbers
-    courseNums = get_courseNums(chonker)
+    values = get_values(chonker)
+
+    # Create CSV value
+    write_csv(values)
 
 
 if __name__ == '__main__':
