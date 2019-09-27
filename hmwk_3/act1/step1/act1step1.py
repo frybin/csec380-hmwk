@@ -55,7 +55,7 @@ def get_values(chonker):
                     # find "div" tags where "class=course-name"
                     name = (
                         tag.contents[3]
-                        .find_all("div", "course-name")[0]
+                        .find_all("div", {"class": "course-name"})[0]
                         .get_text()
                         .strip()
                     )
@@ -98,7 +98,7 @@ def main():
     chonker = []
 
     # Find all "<tr>" tags with "class=hidden-row*"
-    chonker = soup.find_all("tr", "hidden-row")
+    chonker = soup.find_all("tr", {"class": "hidden-row"})
 
     # parse the chonker for courseNumbers
     values = get_values(chonker)
