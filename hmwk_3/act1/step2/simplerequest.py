@@ -30,14 +30,16 @@ class SimpleRequest:
         type="GET",
         resource="/",
         body="",
-        contentType="application/x-www-form-urlencoded",
         request="",
         agent="reeeeeee",
-        https=False
+        https=False,
+        conn="close",
+        otherheaders={},
+        follow=True
     ):
         """
         Sets up the variables that will build the user's custom HTTP request
- 
+
         Args:
             host (str): The host that you are sending the request to.
             port (str, optional): Specify a nonstandard port. Defaults to '80'
@@ -54,6 +56,7 @@ class SimpleRequest:
                                Defaults to 'reeeeeee'.
             https (bool, optional): Whether or not to use TLS to wrap the socket 
                                Defaults to False
+            ohterheaders (dict, optional): Additional user specified headers
         """
         self.host = host
         self.port = port
@@ -61,11 +64,11 @@ class SimpleRequest:
         self.resource = resource
         self.request = request
         self.body = body
-        self.contentType = contentType
         self.agent = agent
         self.https = https
-
-
+        self.conn = conn
+        self.otherheaders = otherheaders
+        self.follow = follow
 
     def render(self):
         """
@@ -74,15 +77,20 @@ class SimpleRequest:
         Returns:
             self.request(str): The full HTTP request properly formatted 
         """
-        self.request += (
-            str(self.type) + " " + str(self.resource) + " HTTP/1.1\r\n"
-        )
-        self.request += (
-            "Host: " + str(self.host) + "\r\n"
-        )
-        self.request += "User-Agent: " + str(self.agent) + "\r\n"
-        self.request += "Connection: close\r\n"
-        self.request += "Content-Length: " + str(len(self.body)) + "\r\n"
+
+        # If we should follow requests destroy old request for rebuild
+        # Clearing the request allows reusing the same request object
+        if self.follow:
+            self.request = ""
+
+        self.request += f"{self.type} {self.resource} HTTP/1.1\r\n"
+        self.request += f"Host: {self.host}\r\n"
+        self.request += f"User-Agent: {self.agent}\r\n"
+        self.request += f"Connection: {self.conn}\r\n"
+        # Add other headers
+        for key in self.otherheaders:
+            self.request += f"{key}: {self.otherheaders[key]}\r\n"
+        self.request += f"Content-Length: {str(len(self.body))}\r\n"
         self.request += "\r\n"
         self.request += str(self.body)
 
@@ -94,7 +102,7 @@ class SimpleRequest:
         return the data from the response
 
         Returns:
-            self.data(str): The HTTP response from the server
+            self.data(dict): Returns dictionary {"h": headers, "b", body}
         """
 
         # Create normal socket
@@ -114,9 +122,61 @@ class SimpleRequest:
         while data_block != b'':
             data += data_block
             data_block = self.sock.recv(4096)
-        self.data = data.decode("utf-8")
+
+        # response holds the entire response, headers and body
+        self.response = data
+
+        # Split on \r\n to seperate headers and body
+        tmp = self.response.split(b"\r\n\r\n")
+
+        # make that sweet sweet dict
+        self.data = {"headers": tmp[0].decode("ascii"), "body": tmp[1]}
+
+        # Get status code
+        self.status = parse_value(self.data["headers"], "HTTP/1.1")
+
+        # Check for redirect
+        if (self.status == "302") or (self.status == "301"):
+            # self.redir tell user that a redirect was encountered
+            self.redir = True
+        else:
+            self.redir = False
 
         return self.data
+
+    def redirects(self):
+        """
+        This function handles 301 and 302 status codes and follows
+        the locations that are provided by the response
+        """
+
+        while (self.redir):
+            # Follow the redirect
+            follow = parse_value(self.data["headers"], "Location:")
+            if (follow is not None):
+                parsed = parse_url(follow)
+                
+                # If host == None path was found not a new link
+                if (parsed["host"] == None):
+                    follow = f"{parsed['resource']}"
+
+                    # Shenanigans for just a path being passed back
+                    tmp = self.resource.split("/")
+
+                    # Parse the new resource value and update it in the request object
+                    newResource = f"/{tmp[1]}/{follow}"
+                    self.resource = newResource
+                else:
+                    # If a new url is found update the values
+                    self.host = parsed["host"]
+                    self.resource = parsed["resource"]
+                    self.https = parsed["https"]
+                    if (self.https is True):
+                        self.port = 443
+
+            # Rebuild the new request and send
+            self.render()
+            self.send()
 
 
 def parse_value(request, value):
@@ -131,13 +191,14 @@ def parse_value(request, value):
     Returns:
         str: Returns the desired value
     """
-
     request = request.split("\r\n")
 
     if ":" in value:
         for field in request:
             if value in field:
                 return (":".join(field.split(":")[1:]).strip()).strip('"')
+    elif value == "HTTP/1.1":
+        return (request[0].split()[1])
     else:
         for field in request:
             if value in field:
@@ -171,15 +232,22 @@ def parse_url(url):
     request.
 
     :param url: A url in its raw form (https://example.com/robots.txt)
-    :return: Returns a dictionary of the (host : resource)
-    Example: (example.com : /robots.txt)
+    :return: Returns a dict of the (host, resource, https)
+    Example: ("host": example.com, "resource": /robots.txt, "https": False)
     """
 
     # Check if https or not
     if ("https" in url):
         url = url.strip("https://")
-    else:
+        https = True
+    elif ("http" in url):
         url = url.strip("http://")
+        https = False
+    else:
+        # Path found... not a full URL
+        https = True
+        url_dict = {"host": None, "resource": url, "https": https}
+        return url_dict
 
     # Split on the /
     url = url.split("/")
@@ -193,7 +261,6 @@ def parse_url(url):
     for val in tmp:
         resource += f"/{val}"
 
-    url_dict = {}
-    url_dict[host] = resource
+    url_dict = {"host": host, "resource": resource, "https": https}
 
     return url_dict
