@@ -40,7 +40,14 @@ def get_image_links(images):
     links = []
 
     for tag in images:
-        links.append(str(tag['data-src']).strip("\r\naa2f\r\n"))
+        # I got one link with this dumb fucking pattern
+        if "\r\naa2f\r\n" in tag['data-src']:
+            tmp = str(tag['data-src']).split("\r\naa2f\r\n")
+            dumb = tmp[0] + tmp[1]
+            links.append(dumb)
+        # Everything else is fine /shrug
+        else:
+            links.append(str(tag['data-src']).strip("\r\n"))
 
     return links
 
