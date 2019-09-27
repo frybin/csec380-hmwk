@@ -148,6 +148,9 @@ class SimpleRequest:
         """
         This function handles 301 and 302 status codes and follows
         the locations that are provided by the response
+
+        It will continue following redirects until a 200 or something
+        else is received. Links not tested... only paths
         """
 
         while (self.redir):
