@@ -37,7 +37,7 @@ class SimpleRequest:
     ):
         """
         Sets up the variables that will build the user's custom HTTP request
-        
+ 
         Args:
             host (str): The host that you are sending the request to.
             port (str, optional): Specify a nonstandard port. Defaults to '80'
@@ -70,7 +70,7 @@ class SimpleRequest:
     def render(self):
         """
         Render builds the HTTP request using values provided by the user
-        
+
         Returns:
             self.request(str): The full HTTP request properly formatted 
         """
@@ -92,7 +92,7 @@ class SimpleRequest:
         """
         Send will send the HTTP request, wait for the response and 
         return the data from the response
-        
+
         Returns:
             self.data(str): The HTTP response from the server
         """
@@ -122,12 +122,12 @@ class SimpleRequest:
 def parse_value(request, value):
     """
     parses an HTTP request and returns the desired value
-    
+
     Args:
         request (str): HTTP request that you want to get a value from
         value (str): Part of the string describing the value. 
                             Ex: Finding a token in the body-->value="Token is:"
-    
+
     Returns:
         str: Returns the desired value
     """
@@ -147,10 +147,10 @@ def parse_value(request, value):
 def url_encode(s):
     """
     Takes a string and URL encodes it using the URL_ENC_DICT
-    
+
     Args:
         s (str): The string to URL encode
-    
+
     Returns:
         encoded (str): The URL encoded string
     """
@@ -162,3 +162,38 @@ def url_encode(s):
             encoded += c
 
     return encoded
+
+
+def parse_url(url):
+    """
+    This function takes a url and seperates it into the
+    host and resource so that it is ready to use for a new
+    request.
+
+    :param url: A url in its raw form (https://example.com/robots.txt)
+    :return: Returns a dictionary of the (host : resource)
+    Example: (example.com : /robots.txt)
+    """
+
+    # Check if https or not
+    if ("https" in url):
+        url = url.strip("https://")
+    else:
+        url = url.strip("http://")
+
+    # Split on the /
+    url = url.split("/")
+
+    # Set HOST and RESOURCE
+    host = url[0]
+    tmp = url[1:]
+
+    # Format resource
+    resource = ""
+    for val in tmp:
+        resource += f"/{val}"
+
+    url_dict = {}
+    url_dict[host] = resource
+
+    return url_dict
