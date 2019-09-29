@@ -35,28 +35,23 @@ class SimpleRequest:
         https=False,
         conn="close",
         otherheaders={},
-        follow=True
+        follow=True,
     ):
         """
-        Sets up the variables that will build the user's custom HTTP request
+        Handles the setup for class variables and gets everything
+        ready for the requests to be built
 
-        Args:
-            host (str): The host that you are sending the request to.
-            port (str, optional): Specify a nonstandard port. Defaults to '80'
-            type (str, optional): The type of request to send: GET, POST, etc
-            resource (str, optional): The resource being requested. 
-                               Defaults to '/'.
-            body (str, optional): Information to include in HTTP body. 
-                               Defaults to ''.
-            contentType (str, optional): Type for the content body. 
-                               Defaults to 'application/x-www-form-urlencoded'.
-            request (str, optional): Optionaly provide another request to build 
-                               onto. Rarely used. Defaults to ''.
-            agent (str, optional): Optionaly provide a custom user agent. 
-                               Defaults to 'reeeeeee'.
-            https (bool, optional): Whether or not to use TLS to wrap the socket 
-                               Defaults to False
-            ohterheaders (dict, optional): Additional user specified headers
+        :param host: FQDN of the target host EX. www.rit.edu
+        :param port: Target port, defaults to 80
+        :param type: Type of request to send, defaults to "GET"
+        :param resource: This is the URI, defaults to "/"
+        :param body: Any data to add to the body, defaults to ""
+        :param request: A premade request, defaults to ""
+        :param agent: The best user agent, defaults to "reeeeeee"
+        :param https: True/False if site uses HTTPS, defaults to False
+        :param conn: Keep alive the connection or not, defaults to "close"
+        :param otherheaders: A dictionary of additional headers, defaults to {}
+        :param follow: Whether or not to follow redirects, defaults to True
         """
         self.host = host
         self.port = port
@@ -72,10 +67,10 @@ class SimpleRequest:
 
     def render(self):
         """
-        Render builds the HTTP request using values provided by the user
+        Render builds the HTTP request based on the headers/values passed
+        by the user
 
-        Returns:
-            self.request(str): The full HTTP request properly formatted 
+        :return: Returns a HTTP request in ASCII
         """
 
         # If we should follow requests destroy old request for rebuild
@@ -98,7 +93,7 @@ class SimpleRequest:
 
     def send(self):
         """
-        Send will send the HTTP request, wait for the response and 
+        Send will send the HTTP request, wait for the response and
         return the data from the response
 
         Returns:
@@ -117,9 +112,9 @@ class SimpleRequest:
 
         # Shenanigans to make sure we get all data from the socket
         # because python sockets are dumb... web is dumb... reeeee
-        data = b''
+        data = b""
         data_block = self.sock.recv(4096)
-        while data_block != b'':
+        while data_block != b"":
             data += data_block
             data_block = self.sock.recv(4096)
 
@@ -136,7 +131,9 @@ class SimpleRequest:
         self.status = parse_value(self.data["headers"], "HTTP/1.1")
 
         # Check for redirect
-        if (self.status == "302") or (self.status == "301"):
+        if ((self.status == "302") or (self.status == "301")) and (
+            self.follow is True
+        ):
             # self.redir tell user that a redirect was encountered
             self.redir = True
         else:
@@ -153,20 +150,21 @@ class SimpleRequest:
         else is received. Links not tested... only paths
         """
 
-        while (self.redir):
+        while self.redir:
             # Follow the redirect
             follow = parse_value(self.data["headers"], "Location:")
-            if (follow is not None):
+            if follow is not None:
                 parsed = parse_url(follow)
-                
+
                 # If host == None path was found not a new link
-                if (parsed["host"] == None):
+                if parsed["host"] is None:
                     follow = f"{parsed['resource']}"
 
                     # Shenanigans for just a path being passed back
                     tmp = self.resource.split("/")
 
-                    # Parse the new resource value and update it in the request object
+                    # Parse the new resource value and update it
+                    # in the request object
                     newResource = f"/{tmp[1]}/{follow}"
                     self.resource = newResource
                 else:
@@ -174,8 +172,10 @@ class SimpleRequest:
                     self.host = parsed["host"]
                     self.resource = parsed["resource"]
                     self.https = parsed["https"]
-                    if (self.https is True):
+                    if self.https is True:
                         self.port = 443
+                    else:
+                        self.port = 80
 
             # Rebuild the new request and send
             self.render()
@@ -184,15 +184,16 @@ class SimpleRequest:
 
 def parse_value(request, value):
     """
-    parses an HTTP request and returns the desired value
+    This function takes a request (usually just headers) and
+    a value (usually a header) and returns the info for the value
+    that was searched for.
 
-    Args:
-        request (str): HTTP request that you want to get a value from
-        value (str): Part of the string describing the value. 
-                            Ex: Finding a token in the body-->value="Token is:"
+    Note: This function can get the status code by passing "HTTP/1.1"
+    as the value parameter.
 
-    Returns:
-        str: Returns the desired value
+    :param request: A HTTP request or response to parse
+    :param value: The string to search for. EX. value="Date:"--> ret Date value
+    :return: Returns the info from the associated value searched for
     """
     request = request.split("\r\n")
 
@@ -201,7 +202,7 @@ def parse_value(request, value):
             if value in field:
                 return (":".join(field.split(":")[1:]).strip()).strip('"')
     elif value == "HTTP/1.1":
-        return (request[0].split()[1])
+        return request[0].split()[1]
     else:
         for field in request:
             if value in field:
@@ -210,13 +211,10 @@ def parse_value(request, value):
 
 def url_encode(s):
     """
-    Takes a string and URL encodes it using the URL_ENC_DICT
+    This function takes a string and returns the URL encoded version
 
-    Args:
-        s (str): The string to URL encode
-
-    Returns:
-        encoded (str): The URL encoded string
+    :param s: The string to url encode
+    :return: Returns the URL encoded form of the original string
     """
     encoded = ""
     for c in s:
@@ -232,7 +230,7 @@ def parse_url(url):
     """
     This function takes a url and seperates it into the
     host and resource so that it is ready to use for a new
-    request.
+    request. Primarily used for following redirects
 
     :param url: A url in its raw form (https://example.com/robots.txt)
     :return: Returns a dict of the (host, resource, https)
@@ -240,10 +238,10 @@ def parse_url(url):
     """
 
     # Check if https or not
-    if ("https" in url):
+    if "https" in url:
         url = url.strip("https://")
         https = True
-    elif ("http" in url):
+    elif "http" in url:
         url = url.strip("http://")
         https = False
     else:
