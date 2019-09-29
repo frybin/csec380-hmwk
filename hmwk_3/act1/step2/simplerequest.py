@@ -12,6 +12,8 @@
 
 import socket
 import ssl
+import threading
+from queue import Queue
 
 # Dict of URL encodings for conversions
 URL_ENC_DICT = {"&": "%26", "=": "%3D"}
@@ -131,9 +133,9 @@ class SimpleRequest:
         self.status = parse_value(self.data["headers"], "HTTP/1.1")
 
         # Check for redirect
-        if ((self.status == "302") or (self.status == "301")) and (
-            self.follow is True
-        ):
+        if ((self.status == "302") or (self.status == "301")):  # and (
+            # self.follow is True
+        # ):
             # self.redir tell user that a redirect was encountered
             self.redir = True
         else:
@@ -265,3 +267,53 @@ def parse_url(url):
     url_dict = {"host": host, "resource": resource, "https": https}
 
     return url_dict
+
+
+def thread_work(tasks, results):
+    """
+    This function is the target of threads to send requests.
+    It will carry out each request/thread to completion then
+    end.
+
+    :param tasks: The full queue of tasks that was created
+    a tasks consists of (idx, request[idx])
+    :param results: A new list to hold the results of the threading shenanigans
+    """
+
+    while not tasks.empty():
+        task = tasks.get()
+        task[1].render()
+        task[1].send()
+        task[1].redirects()
+        # Save the results
+        results[task[0]] = task[1]
+        tasks.task_done()
+
+    return True
+
+
+def thread_requests(requests):
+    """
+    This function takes a list of request objects and will spawn
+    a thread for each object that will make the request outlined
+    by each object.
+
+    :param requests: A list of request objects that are ready to rock'n'roll
+    """
+
+    # Make a bunch of tasks (queue objects)
+    tasks = Queue(maxsize=0)
+    for idx in range(len(requests)):
+        tasks.put((idx, requests[idx]))
+
+    # Make a list for results
+    results = [None for i in range(len(requests))]
+    for idx in range(len(requests)):
+        # Full send the threads
+        thread = (threading.Thread(group=None, target=thread_work, args=(tasks, results)))
+        thread.start()
+
+    # Join on the queue tasks (that good good thread safe)
+    tasks.join()
+
+    return results
