@@ -16,38 +16,46 @@
 
 import simplerequest
 import bs4
-import multiprocessing
 import os
 
 
-def download_images(link):
+def save_images(req, count):
+    """
+    This function taks a reqeust object, and saves the body of the response
+    as a binary file. It uses the URI and a count to name the file
 
-    vals = simplerequest.parse_url(link)
-    print(vals)
+    :param req: A single request object
+    :param count: A count value to append to filename
+    """
 
-    r = simplerequest.SimpleRequest(vals["host"], port=443, resource=vals["resource"], https=vals["https"])
-    r.render()
-    r.send()
-    r.redirects()
-
-    with open("./staff_pics/" + vals["resource"].split("/")[-1], "wb") as fd:
-        fd.write(r.data["body"])
+    with open(
+        "./staff_pics/" + req.resource.split("/")[-1] + str(count), "wb"
+    ) as fd:
+        fd.write(req.data["body"])
 
 
 def get_image_links(images):
+    """
+    This function takes the initial soup parsing for img tags and
+    further parses it to get just the links that we want to send
+    a GET request to.
+
+    :param images: A list of img tags from the dank soup
+    :return: Returns a list of just links to send GET reqs to
+    """
 
     # List of image links
     links = []
 
     for tag in images:
         # I got one link with this dumb fucking pattern
-        if "\r\naa2f\r\n" in tag['data-src']:
-            tmp = str(tag['data-src']).split("\r\naa2f\r\n")
+        if "\r\naa2f\r\n" in tag["data-src"]:
+            tmp = str(tag["data-src"]).split("\r\naa2f\r\n")
             dumb = tmp[0] + tmp[1]
             links.append(dumb)
         # Everything else is fine /shrug
         else:
-            links.append(str(tag['data-src']).strip("\r\n"))
+            links.append(str(tag["data-src"]).strip("\r\n"))
 
     return links
 
@@ -55,7 +63,13 @@ def get_image_links(images):
 def main():
 
     # Make a GET request for the page
-    r = simplerequest.SimpleRequest("www.rit.edu", port=443, resource="/computing/directory?term_node_tid_depth=4919", https=True, conn="close")
+    r = simplerequest.SimpleRequest(
+        "www.rit.edu",
+        port=443,
+        resource="/computing/directory?term_node_tid_depth=4919",
+        https=True,
+        conn="close",
+    )
     r.render()
     r.send()
 
@@ -74,10 +88,36 @@ def main():
     except FileExistsError:
         pass
 
-    # Threading shenanigans
+    # Make a list of hosts, resources, and https
+    vals = []
     for link in links:
-        download_images(link)
+        vals.append(simplerequest.parse_url(link))
+
+    # Create list of request objects
+    requests = []
+    for data in vals:
+        requests.append(
+            simplerequest.SimpleRequest(
+                data["host"],
+                port=443,
+                resource=data["resource"],
+                https=data["https"],
+                follow=True,
+            )
+        )
+
+    # Thread the sending of prepared requests
+    # Save the finished requests
+    new = []
+    new = simplerequest.thread_requests(requests)
+
+    # Send count to append to file name because same name
+    # will over write... caused me 1 hour of headaches
+    count = 0
+    for req in new:
+        save_images(req, count)
+        count += 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
