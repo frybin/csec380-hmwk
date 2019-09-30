@@ -16,6 +16,7 @@
 
 import bs4
 import simplerequest
+import os
 
 
 def get_values(chonker):
@@ -73,10 +74,15 @@ def write_csv(values):
 
     :param values: Dictionary of courseNum:courseName
     """
+    try:
+        if not os.path.exists("./stuff"):
+            os.mkdir("./stuff")
+        with open("./stuff/courses.csv", "w+") as fd:
+            for key in values:
+                fd.write(f"{key},{values[key]}\n")
 
-    with open("./courses.csv", "w+") as fd:
-        for key in values:
-            fd.write(f"{key},{values[key]}\n")
+    except FileExistsError:
+        pass
 
 
 def main():
