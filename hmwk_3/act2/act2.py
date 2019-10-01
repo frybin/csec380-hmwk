@@ -13,7 +13,6 @@
 
 import simplerequest
 import bs4
-import os
 
 
 def main():
@@ -23,18 +22,20 @@ def main():
     req.send()
 
     # Start the soup!
+    print("[+] starting initial crawl to depth 1...")
     soup = bs4.BeautifulSoup(req.data["body"], "html.parser")
     tags = soup.find_all("a")
 
-    href = []
+    # Get links from hrefs
+    links = []
     for tag in tags:
+        # Some anchors don't have "href" throwing exceptions
         try:
-            href.append(tag["href"])
+            links.append(tag["href"])
         except KeyError:
             pass
-
     # pass the list of links and host to crawler function
-    simplerequest.crawl(req.host, href)
+    simplerequest.crawl(req, links, "rit.edu")
 
 
 if __name__ == "__main__":
