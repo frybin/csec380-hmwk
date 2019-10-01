@@ -181,6 +181,55 @@ class SimpleRequest:
             self.render()
             self.send()
 
+    def parse_url(self, url):
+        """
+        This function takes a url and seperates it into the
+        host and resource so that it is ready to use for a new
+        request. Primarily used for following redirects
+
+        :param url: A url in its raw form (https://example.com/robots.txt)
+        :return: Returns a dict of the (host, resource, https)
+        Example: ("host": example.com, "resource": /robots.txt, "https": False)
+        """
+
+        # Check if https or not
+        if "https" in url:
+            url = url.lstrip("https://")
+            https = True
+        elif "http" in url:
+            url = url.lstrip("http://")
+            https = False
+        else:
+            # Path found... not a full URL
+            # Properly make resource based on relative or absolute path
+            if (self.resource != "/") and (url[0] == "/"):
+                resource = url
+            elif (self.resource == "/") and (url[0] == "/"):
+                resource = url
+            elif (self.resource != "/") and (url[0] != "/"):
+                resource = self.resource + "/" + url
+            else:
+                resource = self.resource + url
+
+            url_dict = {"host": self.host, "resource": f"{resource}", "https": self.https}
+            return url_dict
+
+        # Split on the /
+        url = url.split("/")
+
+        # Set HOST and RESOURCE
+        host = url[0]
+        tmp = url[1:]
+
+        # Format resource
+        resource = ""
+        for val in tmp:
+            resource += f"/{val}"
+
+        url_dict = {"host": host, "resource": resource, "https": https}
+
+        return url_dict
+
 
 def parse_value(request, value):
     """
@@ -224,47 +273,6 @@ def url_encode(s):
             encoded += c
 
     return encoded
-
-
-def parse_url(url):
-    """
-    This function takes a url and seperates it into the
-    host and resource so that it is ready to use for a new
-    request. Primarily used for following redirects
-
-    :param url: A url in its raw form (https://example.com/robots.txt)
-    :return: Returns a dict of the (host, resource, https)
-    Example: ("host": example.com, "resource": /robots.txt, "https": False)
-    """
-
-    # Check if https or not
-    if "https" in url:
-        url = url.strip("https://")
-        https = True
-    elif "http" in url:
-        url = url.strip("http://")
-        https = False
-    else:
-        # Path found... not a full URL
-        https = True
-        url_dict = {"host": None, "resource": url, "https": https}
-        return url_dict
-
-    # Split on the /
-    url = url.split("/")
-
-    # Set HOST and RESOURCE
-    host = url[0]
-    tmp = url[1:]
-
-    # Format resource
-    resource = ""
-    for val in tmp:
-        resource += f"/{val}"
-
-    url_dict = {"host": host, "resource": resource, "https": https}
-
-    return url_dict
 
 
 def thread_work(tasks, results):
