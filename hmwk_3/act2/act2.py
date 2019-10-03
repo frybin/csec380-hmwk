@@ -34,8 +34,12 @@ def main():
             links.append(tag["href"])
         except KeyError:
             pass
-    # pass the list of links and host to crawler function
-    simplerequest.crawl(req, links, "rit.edu")
+
+    # Start the crawl!
+    allLinks = simplerequest.crawl(req, links, "rit.edu")
+
+    print(len(allLinks))
+
 
 
 if __name__ == "__main__":
