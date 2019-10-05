@@ -18,7 +18,10 @@ import re
 import queue
 import select
 import os
+import time
 from queue import Queue
+from urllib.parse import urlparse
+from multiprocessing import Process, Manager
 
 # Dict of URL encodings for conversions
 URL_ENC_DICT = {"&": "%26", "=": "%3D"}
@@ -180,10 +183,10 @@ class SimpleRequest:
         the locations that are provided by the response
 
         It will continue following redirects until a 200 or something
-        else is received. Links not tested... only paths
+        else is received.
         """
 
-        while self.redir and self.data is not None:
+        while (self.data is not None) and (self.redir):
             # Follow the redirect
             follow = parse_value(self.data["headers"], "Location:")
             if follow is not None:
@@ -362,142 +365,163 @@ def thread_requests(requests, maxthreads=50):
     return results
 
 
-def crawl_work(tasks, results, scope):
-    """
-    This function will carry out the work for each thread spawned
-    from crawl(). Each thread will be in charge of parsing the HTML
-    to find the links for their respective pages
+def link_filter(tag):
+    return not email_filter(tag) and (tag.has_attr("href") and tag["href"] != "#")
 
-    :param tasks: Queue objects for all the jobs task=(idx, requests[idx])
-    :param results: Place to store the results
-    :param scope: The scope to stay in
-    """
 
-    # Do the tasks
-    while not tasks.empty():
-        task = tasks.get(timeout=5)
-        # Shenanigans because web is dumb
-        while True:
-            try:
-                task[1].render()
-                task[1].send()
-                if task[1].data is None:
-                    continue
-                task[1].redirects()
-                if task[1].data is None:
-                    continue
-            except (ConnectionResetError, socket.gaierror, TimeoutError, queue.Empty):
-                continue
-            else:
-                break
+def email_filter(tag):
+    return tag.has_attr("href") and ("mailto:" in tag["href"]) and ("@" in tag["href"]) and (tag["href"].split("@")[1].count(".") > 0)
 
-        # Save the body
-        body = task[1].data["body"]
 
-        # Try decoding... reeeeeeeeee things break
+def better_parse_url(url):
+    return urlparse(url)
+
+
+def new_crawl_worker(linksToHit, linksVisited, emails, scope, getemails=True):
+
+    wait = True
+
+    while len(linksToHit) > 0 or wait:
         try:
-            body.decode("utf-8")
-        except UnicodeDecodeError:
-            body.decode("latin-1")
+            wait = False
 
-        # Make soup for the thread
-        soup = bs4.BeautifulSoup(body, "html.parser")
-
-        tags = soup.find_all("a")
-
-        links = []
-        for tag in tags:
             try:
-                links.append(tag["href"])
-            except KeyError:
-                pass
+                starttime = time.time()
+                link = linksToHit.pop()
 
-        base = re.escape(scope)
-        # Matches relative or absolute RIT links
-        valid = re.compile("^(https?://[a-zA-Z0-9_\-\.]*" + base + ".*/?|)(/.*)")
-        links_in_scope = []
-        # for link in links:
-        #     if valid.search(link):
-        #         links_in_scope.append(link)
-        links_in_scope = [valid.search(i).group() for i in links
-                            if valid.match(i)]
-        results[task[0]] = links_in_scope
-        print(f"Done with page {task[0]}")
-        tasks.task_done()
-    return True
+            except IndexError:
+                minutes, seconds = divmod((time.time() - starttime), 60)
+
+                if minutes > 1:
+                    print("Thread decided to quit....")
+                    break
+                else:
+                    wait = True
+                    continue
+
+            linksVisited.append(link)
+            link = better_parse_url(link)
+
+            if link.scheme == "https":
+                port = 443
+                https = True
+            else:
+                port = 80
+                https = False
+
+            req = SimpleRequest(link.netloc, resource=link.path, port=port, https=https)
+
+            req.render()
+            req.send()
+            req.redirects()
+
+            soup = bs4.BeautifulSoup(req.data["body"], "html.parser")
+
+            foundlinks = soup.find_all(link_filter)
+
+            # Get emails
+            if getemails:
+                foundemails = soup.find_all(email_filter)
+
+                for email in foundemails:
+                    email = email["href"].replace("mailto:", "").strip().split("?")[0].lower()
+                    depth = link.path.count("/")
+
+                    if ";" in email:
+                        for e in email.split(";"):
+                            if ("@" in e):
+                                for x in emails:
+                                    _, pp = x
+                                    if e == pp:
+                                        found = True
+                                        break
+                                if not found:
+                                    emails.append((depth, e))
+                                    print(e)
+                    else:
+                        if ("@" in email):
+                            # i is a list of emails
+                            found = False
+                            for j in emails:
+                                # j are the emails in the i email list
+                                # _ is depth, k is an email
+                                _, k = j
+                                if email == k:
+                                    found = True
+                                    break
+                            if not found:
+                                emails.append((depth, email))
+                                print(email)
+
+            for x in foundlinks:
+                x = better_parse_url(x["href"])
+                path = x.path
+
+                while "//" in path:
+                    path = path.replace("//", "/")
+
+                if (scope in x.netloc) or ((x.netloc == "" and path != "") and (":" not in path and "@" not in path and "#" not in path)):
+                    path = path.lower().strip()
+
+                    if (path) and (path[0] == "/"):
+                        fullLink = f"{link.scheme}://{link.netloc}{path}"
+                    else:
+                        fullLink = f"{link.scheme}://{link.netloc}{link.path}/{path}"
+
+                    fullLink = fullLink.rstrip("/")
+                    if fullLink not in linksToHit and fullLink not in linksVisited:
+                        # 6 is not a magic number... change my mind
+                        # it is fucking math
+                        if fullLink.count("/") > 6:
+                            continue
+                        linksToHit.append(fullLink)
+        except Exception as e:
+            # Stop being a fucking cunt 
+            continue
 
 
-def crawl(init_req, links, scope, depth=4, maxthreads=50):
+def new_crawl(scope):
+
+    threads = []
+    manager = Manager()
+
+    linksToHit = manager.list()
+    linksVisited = manager.list()
+    emails = manager.list()
+
+    linksToHit.append("https://www.rit.edu")
+
+    for x in range(10):
+        thread = Process(target=new_crawl_worker, args=(linksToHit, linksVisited, emails, scope))
+        threads.append(thread)
+        thread.start()
+
+    new = Process(target=shit_emails_to_file, args=(emails,))
+    new.start()
+    threads.append(new)
+
+    for thread in threads:
+        thread.join()
+
+
+def shit_emails_to_file(ems):
     """
-    This function crawls through a site confined by the "scope". It
-    takes a list of links from an initial request that should be
-    made from the originating script. This is because sending one
-    request is no problem. After receiving the params, it will
-    build the requests and spawn threads to crawl each page for links.
-    It will then save all links that are visited and make sure duplicates
-    are not saved.
+    As you can see... I am very upsetti with this hmwk...
 
-    :param init_req: request object from the first request
-    :param links: The initial list of links from the first request
-    :param scope: The scope of the crawler EX. (rit.edu)
-    :param depth: How deep to crawl, defaults to 4
-    :param maxthreads: The max threads to spawn, defaults to 50
+    This function is the bitch thread
+
+    :param emails: [description]
+    :type emails: [type]
     """
 
-    # For saving searched links
-    searched = []
-
-    # Since this function takes the list of links from the first page
-    # We will do (depth-1), since we are starting at zero, to ensure
-    # we go the required depth. We are effectively starting at a depth
-    # of one
-
-    for x in range(depth):
-        print(f"[+] starting crawl to depth {x+2}...")
-
-        # Prune the initial list of links for scope valid links
-        # also parse the link and create a request object
-        requests = []
-        for link in links:
-            if (link):
-                # Check scope and path
-                if (scope in link) or (link[0] == "/"):
-                    urlDict = init_req.parse_url(link)
-                    requests.append(SimpleRequest(urlDict["host"], resource=urlDict["resource"], port=443, https=urlDict["https"]))
-
-        numThreads = min(len(requests), maxthreads)
-        # Make a bunch of tasks (queue objects)
-        tasks = Queue(maxsize=0)
-        for idx in range(len(requests)):
-            tasks.put((idx, requests[idx]))
-
-        # Make a list for results
-        results = [None for i in range(len(requests))]
-        for idx in range(numThreads):
-            # Full send the threads
-            thread = (threading.Thread(group=None, target=crawl_work, args=(tasks, results, scope)))
-            thread.start()
-
-        # That good good thread stuff
-        tasks.join()
-        print(len(results))
-
-        # Updates
-        print(f"[+] finished searched {len(requests)} links...")
-
-        # Save searched links so we don't repeat
-        searched.extend(links)
-
-        # Save the new links
-        links = []
-        for result in results:
-            for link in result:
-                if (link not in links) and (link not in searched):
-                    links.append(link)
-
-        print(links)
-        print(len(links))
-        print(f"[+] beginning search of {len(links)} links...")
-        # Loop with new "links" list
-
-    return searched
+    shit = []
+    while True:
+        time.sleep(0.1)
+        for depthEmailTuple in ems:
+            dep, em = depthEmailTuple
+            # plop is a singular email.... reeeeeeee
+            path = f"./depth{dep}"
+            if em not in shit:
+                with open(path, "a+") as fd:
+                    fd.write(em + "\n")
+                shit.append(em)
