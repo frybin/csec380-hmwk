@@ -363,10 +363,22 @@ def thread_requests(requests, maxthreads=50):
 
 
 def link_filter(tag):
+    """
+    Some hot link filtering
+
+    :param tag: A BS4 tag
+    :return: the desired tag
+    """
     return not email_filter(tag) and (tag.has_attr("href") and tag["href"] != "#")
 
 
 def email_filter(tag):
+    """
+    Some hot email filtering
+
+    :param tag: A BS4 tag
+    :return: the desired tag
+    """
     return tag.has_attr("href") and ("mailto:" in tag["href"]) and ("@" in tag["href"]) and (tag["href"].split("@")[1].count(".") > 0)
 
 
@@ -375,6 +387,17 @@ def better_parse_url(url):
 
 
 def new_crawl_worker(linksToHit, linksVisited, emails, scope, getemails=True):
+    """
+    This function is for the worker thread that handles the scraping of emails
+    This funciton can also be used to harvest urls instead of emails by
+    passing getemails=False
+
+    :param linksToHit: The list of links that need to visited
+    :param linksVisited: The list of links visited
+    :param emails: A list to hold emails
+    :param scope: The string of the scope to stay between
+    :param getemails: whether or not to get emails, defaults to True
+    """
 
     wait = True
     starttime = time.time()
@@ -475,12 +498,17 @@ def new_crawl_worker(linksToHit, linksVisited, emails, scope, getemails=True):
                         if fullLink.count("/") > 6:
                             continue
                         linksToHit.append(fullLink)
-        except Exception as e:
-            # Stop being a fucking cunt 
+        except Exception:
+            # Do what I thought I coded you to do you piece of shit
             continue
 
 
 def new_crawl(scope):
+    """
+    A better crawl function than the first one that I wrote
+
+    :param scope: The scope to stay in ("rit.edu")
+    """
 
     threads = []
     manager = Manager()
@@ -508,7 +536,9 @@ def shit_emails_to_file(ems):
     """
     As you can see... I am very upsetti with this hmwk...
 
-    This function is the bitch thread
+    This function is the little boi thread. It is run by a thread
+    that yeets emails into the correct files. It reads the emails
+    from the workers that are writting emails to the "emails" list
 
     :param ems: Because I need an ambulance... its the shared
     email tuples list with the searching thread
@@ -528,6 +558,13 @@ def shit_emails_to_file(ems):
 
 
 def shit_urls_to_file(linkbois):
+    """
+    This function reads the urls that are written by the worker threads
+    in the list "linksVisited" and writes them to a file with proper
+    formatting. It makes sure there are no duplicates written.
+
+    :param linkbois: The shared list that the workers are writing links to
+    """
 
     seen = []
     path = "./urls"
