@@ -473,8 +473,7 @@ def new_crawl_worker(linksToHit, linksVisited, emails, scope, getemails=True):
                         if fullLink.count("/") > 6:
                             continue
                         linksToHit.append(fullLink)
-        except Exception as e:
-            # Stop being a fucking cunt 
+        except Exception:
             continue
 
 
