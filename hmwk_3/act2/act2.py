@@ -12,7 +12,6 @@
 #
 
 import simplerequest
-import bs4
 
 
 def main():

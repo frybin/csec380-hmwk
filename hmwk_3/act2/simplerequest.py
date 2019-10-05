@@ -14,10 +14,7 @@ import socket
 import ssl
 import threading
 import bs4
-import re
-import queue
 import select
-import os
 import time
 from queue import Queue
 from urllib.parse import urlparse
