@@ -4,7 +4,7 @@
 # Name: Simon Buchheit
 # Date: October 6, 2019
 #
-# CSEC-380 : hmwk3 : Act1 Part 1
+# CSEC-380 : hmwk3 : Act1 Part 2
 #
 # Purpose: This script scrapes the site:
 #               https://www.rit.edu/computing/directory?term_node_tid_depth=4919
