@@ -166,7 +166,7 @@ class SimpleRequest:
         self.status = parse_value(self.data["headers"], "HTTP/1.1")
 
         # Check for redirect
-        if ((self.status == "302") or (self.status == "301")):
+        if (self.status == "302") or (self.status == "301"):
             # self.redir tell user that a redirect was encountered
             self.redir = True
         else:
@@ -244,7 +244,11 @@ class SimpleRequest:
             else:
                 resource = self.resource + url
 
-            url_dict = {"host": self.host, "resource": f"{resource}", "https": self.https}
+            url_dict = {
+                "host": self.host,
+                "resource": f"{resource}",
+                "https": self.https,
+            }
             return url_dict
 
         # Split on the /
@@ -353,7 +357,9 @@ def thread_requests(requests, maxthreads=50):
     results = [None for i in range(len(requests))]
     for idx in range(len(numThreads)):
         # Full send the threads
-        thread = (threading.Thread(group=None, target=thread_work, args=(tasks, results)))
+        thread = threading.Thread(
+            group=None, target=thread_work, args=(tasks, results)
+        )
         thread.start()
 
     # Join on the queue tasks (that good good thread safe)
@@ -369,7 +375,9 @@ def link_filter(tag):
     :param tag: A BS4 tag
     :return: the desired tag
     """
-    return not email_filter(tag) and (tag.has_attr("href") and tag["href"] != "#")
+    return not email_filter(tag) and (
+        tag.has_attr("href") and tag["href"] != "#"
+    )
 
 
 def email_filter(tag):
@@ -379,7 +387,12 @@ def email_filter(tag):
     :param tag: A BS4 tag
     :return: the desired tag
     """
-    return tag.has_attr("href") and ("mailto:" in tag["href"]) and ("@" in tag["href"]) and (tag["href"].split("@")[1].count(".") > 0)
+    return (
+        tag.has_attr("href")
+        and ("mailto:" in tag["href"])
+        and ("@" in tag["href"])
+        and (tag["href"].split("@")[1].count(".") > 0)
+    )
 
 
 def better_parse_url(url):
@@ -430,7 +443,9 @@ def new_crawl_worker(linksToHit, linksVisited, emails, scope, getemails=True):
                 port = 80
                 https = False
 
-            req = SimpleRequest(link.netloc, resource=link.path, port=port, https=https)
+            req = SimpleRequest(
+                link.netloc, resource=link.path, port=port, https=https
+            )
 
             req.render()
             req.send()
@@ -445,12 +460,18 @@ def new_crawl_worker(linksToHit, linksVisited, emails, scope, getemails=True):
                 foundemails = soup.find_all(email_filter)
 
                 for email in foundemails:
-                    email = email["href"].replace("mailto:", "").strip().split("?")[0].lower()
+                    email = (
+                        email["href"]
+                        .replace("mailto:", "")
+                        .strip()
+                        .split("?")[0]
+                        .lower()
+                    )
                     depth = link.path.count("/")
 
                     if ";" in email:
                         for e in email.split(";"):
-                            if ("@" in e):
+                            if "@" in e:
                                 for x in emails:
                                     _, pp = x
                                     if e == pp:
@@ -460,7 +481,7 @@ def new_crawl_worker(linksToHit, linksVisited, emails, scope, getemails=True):
                                     emails.append((depth, e))
                                     print(e)
                     else:
-                        if ("@" in email):
+                        if "@" in email:
                             # i is a list of emails
                             found = False
                             for j in emails:
@@ -483,16 +504,26 @@ def new_crawl_worker(linksToHit, linksVisited, emails, scope, getemails=True):
                 while "//" in path:
                     path = path.replace("//", "/")
 
-                if (scope in x.netloc) or ((x.netloc == "" and path != "") and (":" not in path and "@" not in path and "#" not in path)):
+                if (scope in x.netloc) or (
+                    (x.netloc == "" and path != "")
+                    and (
+                        ":" not in path and "@" not in path and "#" not in path
+                    )
+                ):
                     path = path.lower().strip()
 
                     if (path) and (path[0] == "/"):
                         fullLink = f"{link.scheme}://{link.netloc}{path}"
                     else:
-                        fullLink = f"{link.scheme}://{link.netloc}{link.path}/{path}"
+                        fullLink = (
+                            f"{link.scheme}://{link.netloc}{link.path}/{path}"
+                        )
 
                     fullLink = fullLink.rstrip("/")
-                    if fullLink not in linksToHit and fullLink not in linksVisited:
+                    if (
+                        fullLink not in linksToHit
+                        and fullLink not in linksVisited
+                    ):
                         # 6 is not a magic number... change my mind
                         # it is fucking math
                         if fullLink.count("/") > 6:
@@ -520,7 +551,10 @@ def new_crawl(scope):
     linksToHit.append("https://www.rit.edu")
 
     for x in range(10):
-        thread = Process(target=new_crawl_worker, args=(linksToHit, linksVisited, emails, scope))
+        thread = Process(
+            target=new_crawl_worker,
+            args=(linksToHit, linksVisited, emails, scope),
+        )
         threads.append(thread)
         thread.start()
 
