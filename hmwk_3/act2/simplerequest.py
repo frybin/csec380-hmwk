@@ -380,14 +380,15 @@ def better_parse_url(url):
 def new_crawl_worker(linksToHit, linksVisited, emails, scope, getemails=True):
 
     wait = True
+    starttime = time.time()
 
     while len(linksToHit) > 0 or wait:
         try:
             wait = False
 
             try:
-                starttime = time.time()
                 link = linksToHit.pop()
+                starttime = time.time()
 
             except IndexError:
                 minutes, seconds = divmod((time.time() - starttime), 60)
