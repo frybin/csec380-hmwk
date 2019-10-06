@@ -1,3 +1,17 @@
+#!/usr/bin/env python
+
+#
+# Name: Simon Buchheit
+# Date: October 6, 2019
+#
+# CSEC-380 : hmwk3 : Act3
+#
+# Purpose: This script crawls the compaines from "companies.csv"
+#          to a depth of 4. On each page the links are split on the "/"
+#          and saved to a file
+#
+
+
 import simplerequest
 from multiprocessing import Process, Manager
 
