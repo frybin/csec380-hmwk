@@ -25,16 +25,23 @@ if($has_session){
 	$_SESSION['login']['born'] = time();	
 
 	// Get Profile data
+	// Prepare a statement
 	if($stmt = $mysqli->prepare("SELECT * from profiles where user_id=?")){
+		//Bind the "user_id" to the "?" param from the statement
 		if($stmt->bind_param("i", $_SESSION['user_id'])){
+			// Execute statement
 			if(!$stmt->execute()){
 				die("Error - Issue executing prepared statement: " . mysqli_error($mysqli));
 			}
+			// Get the resulting columns/rows from stmt
 			if($res = $stmt->get_result()){
+				// row is now an associative array that corresponds to fetched row
 				$row = $res->fetch_assoc();
+				//Should only get 1 row back
 				if($res->num_rows !== 1){
 					die('Error - There is an issue with the database, contact your administrator');
 				}else{
+					// friends is a string of friends seperated by commas
 					$friends = $row['Friends'];
 				}
 			}else{
@@ -46,6 +53,7 @@ if($has_session){
 	}else{
 		die("Error - Issue preparing statement: " . mysqli_error($mysqli));
 	}
+	// If "id" is set in params it overrides session id
 	$id_to_get = $_SESSION['user_id'];
 	if(isset($_GET['id'])){
 		$id_to_get = $_GET['id'];
@@ -58,13 +66,17 @@ if($has_session){
 	if(!is_numeric($id_to_get)){
 		die("There was an issue contact your administrator");
 	}
+	// Friends is now array of friends
 	$friends = explode(',',$friends);
 	// If it's already in the array
 	if(array_search($id_to_get,$friends)){
 		die("There was an issue contact your administrator");
 	}	
+	// Push new user id to friend into array of friends
 	array_push($friends,$id_to_get);
+	// Put the array back into a string
 	$ids = implode(',',$friends);
+	// Update the friends table
 	if($stmt = $mysqli->prepare("UPDATE profiles SET Friends=? WHERE user_id=?")){
 		if($stmt->bind_param("si", $ids, $_SESSION['user_id'])){
 			if(!$stmt->execute()){
