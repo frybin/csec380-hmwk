@@ -77,6 +77,10 @@ if($has_session){
 	<link rel="stylesheet" type="text/css" href="js/source/helpers/jquery.fancybox-thumbs.css?v=1.0.7" />
 	<script type="text/javascript" src="js/source/helpers/jquery.fancybox-thumbs.js?v=1.0.7"></script>
 	<script type="text/javascript" src="js/source/helpers/jquery.fancybox-media.js?v=1.0.6"></script>	
+
+	<!-- FIX: Add token to inputs as hidden value -->
+	<input hidden id="token" value="<?php $_SESSION['token']?>">
+
 	<script>
 	$( document ).ready(function() {
 		$('.fancybox').fancybox();
