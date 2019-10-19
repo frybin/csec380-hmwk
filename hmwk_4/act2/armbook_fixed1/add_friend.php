@@ -58,6 +58,7 @@ if($has_session){
 	if(isset($_GET['id'])){
 		$id_to_get = $_GET['id'];
 	}	
+
 	// If the array isn't us
 	if($id_to_get === $_SESSION['user_id']){
 		die("There was an issue contact your administrator");
