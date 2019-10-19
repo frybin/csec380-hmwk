@@ -20,6 +20,9 @@ if($stmt = $mysqli->prepare("SELECT password, user_id from users where email=?")
 				session_regenerate_id(true);
 				$_SESSION['login'] = ['born' => time(),'ip' => $_SERVER['REMOTE_ADDR'],'valid' => true];
 				$_SESSION['user_id'] = $row['user_id'];
+				// FIX: Add CSRF token
+				// Length of token is 32 chars
+				$_SESSION['token'] = substr(base_convert(sha1(uniqid(mt_rand())), 16, 36), 0, 32);
 				die("True - login successful");
 			}else{
 				die('False - Username or password was invalid"');
