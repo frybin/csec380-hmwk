@@ -136,6 +136,10 @@ if($has_session){
 	<link href="js/jquery-ui-1.10.1.custom.css" rel="stylesheet"/>
 <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/css/jqueryui-editable.css" rel="stylesheet"/>
 <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/js/jqueryui-editable.min.js"></script>
+
+	<!-- FIX: Add token to inputs as hidden value -->
+	<input hidden id="token" value="<?php $_SESSION['token']?>">
+
 	<script>
 	$( document ).ready(function() {
 		$('.fancybox').fancybox();
