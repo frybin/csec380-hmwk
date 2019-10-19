@@ -4,7 +4,7 @@ $dbhost = 'db';
 $dbuser = 'root';
 $dbpass = '';
 $dbname = 'armbook';
-$mysqli = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
+$mysqli = new mysqli(db, $dbuser, $dbpass, $dbname);
 if ($mysqli->connect_errno) {
     echo "Error: Failed to make a MySQL connection, here is why: \n";
     echo "Errno: " . $mysqli->connect_errno . "\n";
