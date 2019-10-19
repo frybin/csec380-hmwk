@@ -24,6 +24,11 @@ if($has_session){
 	// Reset our counter
 	$_SESSION['login']['born'] = time();	
 
+		// FIX: Check for the CSRF token
+	if($_SESSION["token"] !== $_GET["token"]){
+		die("Error - invalid token... Gotcha!");
+	}
+
 	// Get Profile data
 	if($stmt = $mysqli->prepare("SELECT * from profiles where user_id=?")){
 		if($stmt->bind_param("i", $_SESSION['user_id'])){
