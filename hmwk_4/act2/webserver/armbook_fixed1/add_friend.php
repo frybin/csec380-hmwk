@@ -22,7 +22,12 @@ if($has_session){
 		session_destroy();
 	}
 	// Reset our counter
-	$_SESSION['login']['born'] = time();	
+	$_SESSION['login']['born'] = time();
+
+	// FIX: Check for the CSRF token
+	if($_SESSION["token"] !== $_GET["token"]){
+		die("Error - invalid token... Gotcha!");
+	}
 
 	// Get Profile data
 	// Prepare a statement
