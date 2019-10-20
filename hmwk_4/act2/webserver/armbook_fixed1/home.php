@@ -137,9 +137,6 @@ if($has_session){
 <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/css/jqueryui-editable.css" rel="stylesheet"/>
 <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/js/jqueryui-editable.min.js"></script>
 
-	<!-- FIX: Add token to inputs as hidden value -->
-	<input hidden id="token" value="<?php $_SESSION['token']?>">
-
 	<script>
 	$( document ).ready(function() {
 		$('.fancybox').fancybox();
@@ -161,13 +158,15 @@ if($has_session){
 			});
 		});
 		$( "#add_friend" ).click(function() {
-			$.get( "add_friend.php?id=<?php echo $id_to_get; ?>", function( data ) {
+			// FIX: Add token as a parmeter to the request
+			$.get( "add_friend.php?id=<?php echo $id_to_get; ?>&token=<?php echo $_SESSION['token']; ?>", function( data ) {
 			  event.preventDefault();
 			});
 			location.reload();
 		});
 		$( "#del_friend" ).click(function() {
-			$.get( "del_friend.php?id=<?php echo $id_to_get; ?>", function( data ) {	
+			// FIX: Add token as a parameter to the request
+			$.get( "del_friend.php?id=<?php echo $id_to_get; ?>&token=<?php echo $_SESSION['token']; ?>", function( data ) {	
 			  event.preventDefault();
 			});
 			location.reload();

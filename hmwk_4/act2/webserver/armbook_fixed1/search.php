@@ -78,9 +78,6 @@ if($has_session){
 	<script type="text/javascript" src="js/source/helpers/jquery.fancybox-thumbs.js?v=1.0.7"></script>
 	<script type="text/javascript" src="js/source/helpers/jquery.fancybox-media.js?v=1.0.6"></script>	
 
-	<!-- FIX: Add token to inputs as hidden value -->
-	<input hidden id="token" value="<?php $_SESSION['token']?>">
-
 	<script>
 	$( document ).ready(function() {
 		$('.fancybox').fancybox();
@@ -102,13 +99,15 @@ if($has_session){
 			});
 		});
 		$( "#add_friend" ).click(function() {
-			$.get( "add_friend.php?id=<?php echo $id_to_get; ?>", function( data ) {
+			// FIX: Add token to the request
+			$.get( "add_friend.php?id=<?php echo $id_to_get; ?>&token=<?php echo $_SESSION['token']; ?>", function( data ) {
 			  event.preventDefault();
 			});
 			location.reload();
 		});
 		$( "#del_friend" ).click(function() {
-			$.get( "del_friend.php?id=<?php echo $id_to_get; ?>", function( data ) {	
+			// FIX: Add token to request
+			$.get( "del_friend.php?id=<?php echo $id_to_get; ?>&token=<?php echo $_SESSION['token']; ?>", function( data ) {	
 			  event.preventDefault();
 			});
 			location.reload();
