@@ -9,16 +9,14 @@ And posted it to the message board. My username:
 
 > oneNutW0nder reee :: id=36
 
-_I am all the way at the bottom of the pic_
-
-![alt text][proof]
+![Friends][proof]
 
 
 # How I Fixed This Issue
 
 This issue can be fixed by implementing CSRF tokens. These tokens will be generated when a user logs in, and they  will be sent with each request. When the request reaches its destination (application endpoints) the token sent with the request will be checked against the token generated for the session.
 
-__Files Edited__
+__Files Edited__  
 > login.php -- Generate a token when successful login occurs  
 > home.php -- Added tokens to requests to add/del_friend.php  
 > search.php -- Added tokens to requests to add/del_friend.php  
