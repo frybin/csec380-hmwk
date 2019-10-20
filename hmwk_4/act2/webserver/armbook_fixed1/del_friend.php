@@ -24,7 +24,7 @@ if($has_session){
 	// Reset our counter
 	$_SESSION['login']['born'] = time();	
 
-		// FIX: Check for the CSRF token
+	// FIX: Check for the CSRF token
 	if($_SESSION["token"] !== $_GET["token"]){
 		die("Error - invalid token... Gotcha!");
 	}
