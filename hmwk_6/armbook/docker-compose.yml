@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  webserver:
+    build: "./webserver"
+    ports:
+      - "8080:80"
+      - "8081:443"
