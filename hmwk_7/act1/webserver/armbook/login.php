@@ -32,6 +32,7 @@ if($stmt = $mysqli->prepare("SELECT password, user_id from users where email=?")
 						die("Error - Issue binding prepared statement: " . mysqli_error($mysqli));
 					}
 					if($stmt->close()){
+						// This will now set the session as the newly gen'd session
 						setcookie("ARM_SESSION", $session, time()+3600);
 						die("True - login successful");
 					}else{
