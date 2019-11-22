@@ -79,8 +79,8 @@ if(isset($_SESSION['login'])){
 <input type="text" id="email" name="email" />
 </td><td>
 <input type="password" id="password" name="password" />
-<!-- ISSUE! Only checking if ARM_SESSION is set and if not using the first 22 chars of the md5(current_time()) as the session ID -->
-<input type="hidden" id="session_id" name="ARM_SESSION" value="<?php if(!isset($_REQUEST["ARM_SESSION"])){echo substr(md5(time()),0,22);}else{echo htmlentities($_REQUEST["ARM_SESSION"]);} ?>" />
+<!-- ISSUE! This allows a user to specify a sessionID if they want which ends up becoming the sessionID in the DB -->
+<!-- <input type="hidden" id="session_id" name="ARM_SESSION" value="<//?php if(!isset($_REQUEST["ARM_SESSION"])){echo substr(md5(time()),0,22);}else{echo htmlentities($_REQUEST["ARM_SESSION"]);} ?>" /> -->
 </td><td>
 <input type="submit" name="submit" value="login" />
 </td></tr>

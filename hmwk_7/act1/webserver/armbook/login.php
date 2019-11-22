@@ -2,8 +2,8 @@
 ini_set("request_order", "GPC");
 $email = $_POST['email'];
 $password = $_POST['password'];
-// ISSUE! Set $session from a request which could come from just a GET
-$session = htmlentities($_REQUEST['ARM_SESSION']);
+// ISSUE! Set $session from the form on index.php and this value can come from GET request
+//$session = htmlentities($_REQUEST['ARM_SESSION']);
 include_once("common.php");
 if($stmt = $mysqli->prepare("SELECT password, user_id from users where email=?")){
 	if($stmt->bind_param("s", $email)){
@@ -19,7 +19,10 @@ if($stmt = $mysqli->prepare("SELECT password, user_id from users where email=?")
 			if($password === $row['password']){
 				$active = 1;
 				$timeNow = time();
+				// Generate the new sessionID here instead of in index.php
+				$session = substr(md5(time()),0,22);
 				// ISSUE! Updating sessionID in DB based on the $session value provided in request
+				// This allows an attacker to set the session ID for the user
 				if($stmt = $mysqli->prepare("UPDATE sessions SET session_id=?, ip=?, born=?, valid=? where user_id=?")){
 					if($stmt->bind_param("ssiis",$session, $_SERVER['REMOTE_ADDR'],$timeNow,$active,$row['user_id'])){
 						if(!$stmt->execute()){
