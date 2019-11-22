@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  db:
+    build: "./db"
+    environment:
+      - "MYSQL_ALLOW_EMPTY_PASSWORD=yes"
+      - "MYSQL_DATABASE=armbook"
+    volumes:
+      - "mariadb_armbook:/armbook"
+  webserver:
+    build: "./webserver"
+    ports:
+      - "8080:80"
+      - "8081:443"
+    depends_on:
+      - db
+    links:
+      - db
+volumes:
+  mariadb_armbook:
+    driver: local
