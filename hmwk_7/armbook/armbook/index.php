@@ -29,7 +29,7 @@ if(isset($_SESSION['login'])){
 			if($('#password').val()==""){
 				valid=false;
 			}
-		  	if(valid == false){
+			if(valid == false){
 				$("#message").css( "color", "red" )
 				$("#message").html("The credentials you inserted were not valid");	
 			}			
@@ -79,6 +79,7 @@ if(isset($_SESSION['login'])){
 <input type="text" id="email" name="email" />
 </td><td>
 <input type="password" id="password" name="password" />
+<!-- ISSUE! Only checking if ARM_SESSION is set and if not using the first 22 chars of the md5(current_time()) as the session ID -->
 <input type="hidden" id="session_id" name="ARM_SESSION" value="<?php if(!isset($_REQUEST["ARM_SESSION"])){echo substr(md5(time()),0,22);}else{echo htmlentities($_REQUEST["ARM_SESSION"]);} ?>" />
 </td><td>
 <input type="submit" name="submit" value="login" />
